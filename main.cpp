@@ -27,7 +27,7 @@ vector<Producto> Verduras = {
     {5,"Pepino", 0.3}
 };
 
-char Productos;
+char tipoDeProducto;
     
 // Función para mostrar los productos disponibles
 void mostrarProductos(const vector<Producto>& Productos) {
@@ -36,14 +36,14 @@ void mostrarProductos(const vector<Producto>& Productos) {
     }
 }
 
-void listarProductos(){
+void listarProductos() {
     char opc;
     do {
-        char producto;
+        char tipoDeProducto;
         cout << "Ingrese el tipo de producto (F para frutas, V para verduras): ";
-        cin>>producto;
-        producto=toupper(producto);
-        switch (producto) {
+        cin>>tipoDeProducto;
+        tipoDeProducto=toupper(tipoDeProducto);
+        switch (tipoDeProducto) {
             case 'F':
                 cout << "Frutas disponibles:\n";
                 mostrarProductos(Frutas);
@@ -55,10 +55,10 @@ void listarProductos(){
             default:
                 cout << "Opción no válida. Por favor, ingrese 'F' para frutas o 'V' para verduras." << endl;
         }
-        cout << "¿Desea ver más productos? (S para continuar, cualquier otra tecla para salir): ";
+        cout << "¿Desea ver más productos? (S para salir, cualquier otra tecla para continuar): ";
         cin >> opc;
         opc = toupper(opc);
-    } while (opc=='S');
+    } while (opc!='S');
 }
 
 float buscarProducto(const vector<Producto>& Productos, const int& id) {
@@ -84,20 +84,27 @@ float buscarProducto(const vector<Producto>& Productos, const int& id) {
 }
 
 void realizarCompra(const vector<Producto>& Productos) {
-    int id;
-    cout << "Ingrese el ID del producto que desea comprar: ";
-    cin >> id;
-    if(cin.fail() || id < 1 || id > Productos.size()) {
-        cout << "ID no válido. Por favor, ingrese un ID entre 1 y " << Productos.size() << "." << endl;
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        return;
-    }
-    float precio = buscarProducto(Productos, id);
-    if (precio > 0) {
-        sumaTotal += precio;
-        cout << "Producto agregado al carrito. Total actual: $" << sumaTotal << endl;
-    }
+    char continuar;
+    // cout << "Productos disponibles para comprar:" << endl;
+    // mostrarProductos(Productos);
+    do {
+        int id;
+        cout << "Ingrese el ID del producto que desea comprar: ";
+        cin >> id;
+        if(cin.fail() || id < 1 || id > Productos.size()) {
+            cout << "ID no válido. Por favor, ingrese un ID entre 1 y " << Productos.size() << "." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return;
+        }
+        float precio = buscarProducto(Productos, id);
+        if (precio > 0) {
+            sumaTotal += precio;
+            cout << "Producto agregado al carrito. Total actual: $" << sumaTotal << endl;
+        }
+        cout << "¿Desea agregar otro producto? (S para salir, cualquier otra tecla para continuar): ";
+        cin >> continuar;
+    } while (toupper(continuar) != 'S');
 }
 
 int main() {
@@ -119,9 +126,9 @@ int main() {
                 break;
             case 2:
                 cout << "Seleccione el tipo de producto para comprar (F para frutas, V para verduras): ";
-                cin >> Productos;
-                Productos = toupper(Productos);
-                switch (Productos) {
+                cin >> tipoDeProducto;
+                tipoDeProducto = toupper(tipoDeProducto);
+                switch (tipoDeProducto) {
                     case 'F':
                         realizarCompra(Frutas);
                         break;
