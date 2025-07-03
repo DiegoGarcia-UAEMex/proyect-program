@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <conio.h>
 using namespace std;
 double sumaTotal=0;
 struct Producto
@@ -27,12 +28,59 @@ vector<Producto> Verduras = {
     {5,"Pepino", 0.3}
 };
 
+#define ENTER 13
+#define ESC 27
+#define UP_ARROW 72
+#define LEFT_ARROW 75
+#define RIGHT_ARROW 77
+#define DOWN_ARROW 80
 char tipoDeProducto;
+
+void moverAdelante(int &i, const vector<Producto>& productos) {
+    if(i < productos.size() - 1) {
+        i++;
+    } else {
+        cout << "You are in the end of the array." << endl;
+    }
+    cout << "- " << productos[i].id << " " << productos[i].nombre << " ($" << productos[i].precio << ")" << endl;
+}
+
+int moverAtras(int i, const vector<Producto>& productos){
+    if(i > 0) {
+        i--;
+    } else {
+        cout << "You are in the start of the array" << endl;
+    }
+    cout << "- " << productos[i].id << " " << productos[i].nombre << " ($" << productos[i].precio << ")" << endl;
+    return i;
+}
     
 // Función para mostrar los productos disponibles
-void mostrarProductos(const vector<Producto>& Productos) {
-    for (const auto& Producto : Productos) {
-        cout << "- " << Producto.id << " " << Producto.nombre << " ($" << Producto.precio << ")" << endl;
+void mostrarProductos(const vector<Producto>& productos) {
+    int i = 0;
+    cout << "Usa las flechas para navegar, Enter para seleccionar, ESC para salir:" << endl;
+    cout << "- " << productos[i].id << " " << productos[i].nombre << " ($" << productos[i].precio << ")" << endl;
+    
+    while(true){
+        int input = _getch(); // Get a character from the console without echoing it
+        switch (input) {
+            case ENTER:
+                cout << "Enter pressed" << endl;
+                return; // Salir de la función
+            case ESC:
+            case 3:
+                cout << "exiting..." << endl;
+                return; // Salir de la función
+            case DOWN_ARROW:
+            case RIGHT_ARROW:
+                moverAdelante(i, productos);
+                break;
+            
+            case UP_ARROW:
+            case LEFT_ARROW:
+                i = moverAtras(i, productos);
+                break;
+        }
     }
 }
 
