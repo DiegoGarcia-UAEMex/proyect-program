@@ -27,7 +27,12 @@ vector<Producto> Verduras = {
     {4,"Lechuga", 0.4},
     {5,"Pepino", 0.3}
 };
-
+void sumarPrecio(float precio) {
+    if(precio >= 0){
+        sumaTotal += precio;
+        cout << "Monto actual: $" << sumaTotal << endl;
+    }
+}
 #define ENTER 13
 #define ESC 27
 #define UP_ARROW 72
@@ -65,7 +70,7 @@ void mostrarProductos(const vector<Producto>& productos) {
         int input = _getch(); // Get a character from the console without echoing it
         switch (input) {
             case ENTER:
-                cout << "Enter pressed" << endl;
+                sumarPrecio(productos[i].precio);
                 return; // Salir de la función
             case ESC:
             case 3:
@@ -84,11 +89,12 @@ void mostrarProductos(const vector<Producto>& productos) {
     }
 }
 
-void listarProductos() {
-    char opc;
-    do {
+int main() {
+    cout << "Bienvenido al sistema de compra de productos." << endl;
+    while (true)
+    {
         char tipoDeProducto;
-        cout << "Ingrese el tipo de producto (F para frutas, V para verduras): ";
+        cout << "Que tipo de productos desea ver (F para frutas, V para verduras): ";
         cin>>tipoDeProducto;
         tipoDeProducto=toupper(tipoDeProducto);
         switch (tipoDeProducto) {
@@ -103,97 +109,13 @@ void listarProductos() {
             default:
                 cout << "Opción no válida. Por favor, ingrese 'F' para frutas o 'V' para verduras." << endl;
         }
-        cout << "¿Desea ver más productos? (S para salir, cualquier otra tecla para continuar): ";
-        cin >> opc;
-        opc = toupper(opc);
-    } while (opc!='S');
-}
-
-float buscarProducto(const vector<Producto>& Productos, const int& id) {
-    int mitadProductos = ceil(Productos.size() / 2.0) - 1;
-    int i=mitadProductos;
-    for(int j=0; j<Productos.size(); j++) {
-        if (Productos[i].id == id) {
-            cout << "Producto encontrado: " << Productos[i].nombre << " - $" << Productos[i].precio << endl;
-            return Productos[i].precio;
+        cout << "\nPresione cualquier tecla para continuar, ESC o Ctrl-C para salir: \n";
+        int opc=_getch();
+        if (opc == 3|| opc == ESC) {
+            cout << "Gracias por usar el sistema. Total a pagar: $" << sumaTotal << endl;
+            return 0; // Salir del bucle y finalizar el programa
         }
-        if (Productos[i].id < id) {
-            i++;
-        } else {
-            i--;
-        }
-        if (i < 0 || i >= Productos.size()) {
-            break; // Evitar desbordamiento de índice
-        }
-    
     }
-    cout << "Producto no encontrado." << endl;
-    return 0.0;
-}
-
-void realizarCompra(const vector<Producto>& Productos) {
-    char continuar;
-    // cout << "Productos disponibles para comprar:" << endl;
-    // mostrarProductos(Productos);
-    do {
-        int id;
-        cout << "Ingrese el ID del producto que desea comprar: ";
-        cin >> id;
-        if(cin.fail() || id < 1 || id > Productos.size()) {
-            cout << "ID no válido. Por favor, ingrese un ID entre 1 y " << Productos.size() << "." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            return;
-        }
-        float precio = buscarProducto(Productos, id);
-        if (precio > 0) {
-            sumaTotal += precio;
-            cout << "Producto agregado al carrito. Total actual: $" << sumaTotal << endl;
-        }
-        cout << "¿Desea agregar otro producto? (S para salir, cualquier otra tecla para continuar): ";
-        cin >> continuar;
-    } while (toupper(continuar) != 'S');
-}
-
-int main() {
-    cout << "Bienvenido al sistema de compra de productos." << endl;
-    char opc;
-    do {
-        cout << "Que desea hacer? 1. Ver productos disponibles 2. Realizar una compra" << endl;
-        int opcion;
-        cin >> opcion;
-        if(cin.fail() || (opcion != 1 && opcion != 2)) {
-            cout << "Opción no válida. Por favor, ingrese 1 o 2." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue; // Volver a solicitar la opción
-        }
-        switch (opcion) {
-            case 1:
-                listarProductos();
-                break;
-            case 2:
-                cout << "Seleccione el tipo de producto para comprar (F para frutas, V para verduras): ";
-                cin >> tipoDeProducto;
-                tipoDeProducto = toupper(tipoDeProducto);
-                switch (tipoDeProducto) {
-                    case 'F':
-                        realizarCompra(Frutas);
-                        break;
-                    case 'V':
-                        realizarCompra(Verduras);
-                        break;
-                    default:
-                        cout << "Opción no válida. Por favor, ingrese 'F' para frutas o 'V' para verduras." << endl;
-                        break;
-                }
-                break;
-            default:
-                cout << "Opción no válida. Por favor, ingrese 1, 2 o 3." << endl;
-                break;
-        }
-        cout << "¿Desea realizar otra operación? cualquier tecla para continuar, 3. salir: ";
-        cin >> opc;
-    } while (opc != '3');
+    
     return 0;
 }
