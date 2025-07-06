@@ -20,7 +20,10 @@ struct Producto
 #define UP_ARROW 72
 #define LEFT_ARROW 75
 #define RIGHT_ARROW 77
-#define DOWN_ARROW 80    
+#define DOWN_ARROW 80
+#define DELETE 8
+
+// Productos
 vector<Producto> Productos[] = {
     {
         {1,"Manzana", 0.5},
@@ -97,7 +100,7 @@ int main() {
     cout << "Bienvenido al sistema de compra de Productos." << endl;
     int i = 0;
     int j = 0;
-    cout << "Usa las flechas arriba y abajo para cambiar de categoria, las flechas izquierda y derecha para cambiar de producto en una misma categoria, Enter para seleccionar, ESC para salir:" << endl;
+    cout << "Usa las flechas arriba y abajo para cambiar de categoria, las flechas izquierda y derecha para cambiar de producto en una misma categoria, Enter para seleccionar, Borrar para quitar la selección, ESC para salir:" << endl;
     cout << nombreProductos[i] << endl;
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
     
@@ -109,6 +112,14 @@ int main() {
                 if(Productos[i][j].precio >= 0){
                     sumaTotal += Productos[i][j].precio;
                     cout << "Monto actual: $" << sumaTotal << endl;
+                }
+                break;
+            case DELETE:
+                if(sumaTotal > 0) {
+                    sumaTotal -= Productos[i][j].precio;
+                    cout << "Monto actual: $" << sumaTotal << endl;
+                } else {
+                    cout << "No hay monto para eliminar." << endl;
                 }
                 break;
             case ESC:
