@@ -6,6 +6,8 @@
 #include <limits>
 #include <conio.h>
 using namespace std;
+
+//Variables
 struct Producto
     {
         int id;
@@ -19,25 +21,6 @@ struct Producto
 #define LEFT_ARROW 75
 #define RIGHT_ARROW 77
 #define DOWN_ARROW 80    
-// Listas de Productos
-
-
-void siguiente(int &i) {
-    if(i < 4) {
-        i++;
-    } else {
-        cout << "You are in the end of the array." << endl;
-    }
-    
-}
-
-void anterior(int &i){
-    if(i > 0) {
-        i--;
-    } else {
-        cout << "You are in the start of the array" << endl;
-    }
-}
 vector<Producto> Productos[] = {
     {
         {1,"Manzana", 0.5},
@@ -74,13 +57,33 @@ vector<Producto> Productos[] = {
         {4, "Mantequilla", 1.2},
         {5, "Helado", 2.0}
     }
-};    
+};
+string nombreProductos[]={"Frutas", "Verduras", "Legumbres", "Carnes", "Lacteos"};
+
+// Funciones para navegar por los Productos
+void siguiente(int &i) {
+    if(i < 4) {
+        i++;
+    } else {
+        i = 0;
+    }
+    
+}
+
+void anterior(int &i){
+    if(i > 0) {
+        i--;
+    } else {
+        i = 4;
+    }
+}
+
+
 // Función para mostrar los Productos disponibles
 void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
     if(input == UP_ARROW || input == DOWN_ARROW) {
-
         direction(i);
-        cout << "nivel: " << i+1 << endl;
+        cout << nombreProductos[i] << endl;
     } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
         direction(j);
     }
@@ -89,14 +92,18 @@ void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &
 
 int main() {
     double sumaTotal=0;
+
+    // mensaje de bienvenida
     cout << "Bienvenido al sistema de compra de Productos." << endl;
     int i = 0;
     int j = 0;
-    cout << "Usa las flechas para navegar, Enter para seleccionar, ESC para salir:" << endl;
+    cout << "Usa las flechas arriba y abajo para cambiar de categoria, las flechas izquierda y derecha para cambiar de producto en una misma categoria, Enter para seleccionar, ESC para salir:" << endl;
+    cout << nombreProductos[i] << endl;
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
     
+    //Inicia la navegación por los Productos
     while(true){
-        int input = _getch(); // Get a character from the console without echoing it
+        int input = _getch();
         switch (input) {
             case ENTER:
                 if(Productos[i][j].precio >= 0){
@@ -108,7 +115,7 @@ int main() {
             case 3:
                 cout << "Gracias por usar el sistema de compra de Productos." << endl;
                 cout << "Total a pagar: $" << sumaTotal << endl;
-                return 0; // Salir de la función
+                return 0;
             case RIGHT_ARROW:
                mover(i, j, Productos, siguiente, input);
                 break;
