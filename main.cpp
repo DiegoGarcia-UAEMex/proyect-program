@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 #include <conio.h>
+#include <windows.h>
 using namespace std;
 
 //Variables
@@ -15,13 +16,26 @@ struct Producto
         float precio;
     };
 
+//Teclas
 #define ENTER 13
 #define ESC 27
 #define UP_ARROW 72
 #define LEFT_ARROW 75
 #define RIGHT_ARROW 77
 #define DOWN_ARROW 80
-#define DELETE 8
+#define DELETEKEY 8
+
+//Colores
+#define DARK_BLUE 31
+//#define DARK_GREEN_BLACK 32
+#define RED 64
+#define YELLOW 224
+#define LIGHT_GRAY_BLACK 112
+//#define LIGHT_GRAY_GREEN 112
+//#define DARK_GRAY 128
+#define GREEN_BLACK 160
+#define LIGHT_GREEN 176
+#define WHITE 240
 
 // Productos
 vector<Producto> Productos[] = {
@@ -63,11 +77,26 @@ vector<Producto> Productos[] = {
 };
 string nombreProductos[]={"Frutas", "Verduras", "Legumbres", "Carnes", "Lacteos"};
 
+struct Menu {
+	string categoria;
+	int pos_X;	
+};
+
+// Estructura para el menú
+struct Menu menu[] = {
+    {"Frutas", 0},
+    {"Verduras", 7},
+    {"Legumbres", 16},
+    {"Carnes", 26},
+    {"Lacteos", 33}
+};
+
 // Funciones para navegar por los Productos
 void siguiente(int &i) {
     if(i < 4) {
         i++;
     } else {
+        cout << "No hay más categorías." << endl;
         i = 0;
     }
     
@@ -77,7 +106,8 @@ void anterior(int &i){
     if(i > 0) {
         i--;
     } else {
-        i = 4;
+        cout << "No hay categorías anteriores." << endl;
+        i=Productos[i].size() - 1;
     }
 }
 
@@ -87,15 +117,81 @@ void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &
     if(input == UP_ARROW || input == DOWN_ARROW) {
         direction(i);
         cout << nombreProductos[i] << endl;
+        j = 0; // Reset product index when changing category
     } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
         direction(j);
     }
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
 }
+// Función para mover el cursor a una posición específica en la consola
+void gotoxy(int x, int y, int width, int backgroundColor = LIGHT_GRAY_BLACK) {
+    HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    DWORD written;
+    // Fill with background color
+    FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
+    SetConsoleCursorPosition(handle, coord);
+}
+
+void mostrarProducto(int i, int j, vector<Producto> productos[]) {
+    gotoxy(0, 0,0);
+}
+void mostrarEnColumna(int x, int y, int width, int backgroundColor, string categoria) {
+    cout << categoria << " ";
+    gotoxy(x, y, width, backgroundColor);
+}
+
+// Función para establecer color de fondo sin mover el cursor
+void setBackgroundAt(int x, int y, int width, int backgroundColor) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    DWORD written;
+    
+    // Solo cambia el color de fondo, no mueve el cursor
+    FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
+}
+
+// Función para establecer color de fondo en un área rectangular sin mover cursor
+void setBackgroundArea(int x0, int y0, int x1, int y1, int backgroundColor) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    
+    int width = x1 - x0 + 1;
+    
+    // Llenar cada fila con el color de fondo
+    for(int y = y0; y <= y1; y++) {
+        COORD coord = {x0, y};
+        FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
+    }
+}
+
+// Función para obtener la posición actual del cursor
+COORD getCurrentCursorPosition() {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(handle, &csbi);
+    return csbi.dwCursorPosition;
+}
+
+// Función para obtener solo la coordenada Y del cursor
+int getCurrentCursorY() {
+    COORD pos = getCurrentCursorPosition();
+    return pos.Y;
+}
+
+// Función para obtener solo la coordenada X del cursor
+int getCurrentCursorX() {
+    COORD pos = getCurrentCursorPosition();
+    return pos.X;
+}
 
 int main() {
     double sumaTotal=0;
-
+    system("cls");
     // mensaje de bienvenida
     cout << "Bienvenido al sistema de compra de Productos." << endl;
     int i = 0;
@@ -103,7 +199,7 @@ int main() {
     cout << "Usa las flechas arriba y abajo para cambiar de categoria, las flechas izquierda y derecha para cambiar de producto en una misma categoria, Enter para seleccionar, Borrar para quitar la selección, ESC para salir:" << endl;
     cout << nombreProductos[i] << endl;
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
-    
+    setBackgroundArea(0, 4, 6, 4, LIGHT_GRAY_BLACK);
     //Inicia la navegación por los Productos
     while(true){
         int input = _getch();
@@ -114,7 +210,7 @@ int main() {
                     cout << "Monto actual: $" << sumaTotal << endl;
                 }
                 break;
-            case DELETE:
+            case DELETEKEY:
                 if(sumaTotal > 0) {
                     sumaTotal -= Productos[i][j].precio;
                     cout << "Monto actual: $" << sumaTotal << endl;
@@ -132,12 +228,14 @@ int main() {
                 break;
             case DOWN_ARROW:
                 mover(i, j, Productos, siguiente, input);
+                setBackgroundArea(0, getCurrentCursorY()-2, nombreProductos[i].size(), getCurrentCursorY()-2, LIGHT_GRAY_BLACK);
                 break;
             case LEFT_ARROW:
                 mover(i, j, Productos, anterior, input);
                 break;
             case UP_ARROW:
                 mover(i, j, Productos, anterior, input);
+                setBackgroundArea(0, getCurrentCursorY()-2, nombreProductos[i].size(), getCurrentCursorY()-2, LIGHT_GRAY_BLACK);
                 break;
         }
     }
