@@ -92,13 +92,37 @@ struct Menu menu[] = {
     {"Lacteos", 40}
 };
 
+// Función para limpiar color de fondo en un área rectangular
+void clearBackgroundArea(int x0, int y0, int x1, int y1) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    
+    int width = x1 - x0 + 1;
+    
+    // Limpiar cada fila restaurando color normal
+    for(int y = y0; y <= y1; y++) {
+        COORD coord = {x0, y};
+        FillConsoleOutputAttribute(handle, NORMAL, width, coord, &written);
+    }
+}
+// Función para establecer color de fondo sin mover el cursor
+void setBackgroundAt(int x, int y, int width, int backgroundColor) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    DWORD written;
+    
+    // Solo cambia el color de fondo, no mueve el cursor
+    FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
+}
 // Funciones para navegar por los Productos
 void siguiente(int &i) {
     if(i < 4) {
         i++;
     } else {
-        cout << "No hay más categorías." << endl;
         i = 0;
+        clearBackgroundArea(0, 3, 40, 3);
     }
     
 }
@@ -107,8 +131,8 @@ void anterior(int &i){
     if(i > 0) {
         i--;
     } else {
-        cout << "No hay categorías anteriores." << endl;
         i=Productos[i].size() - 1;
+        clearBackgroundArea(0, 3, 6, 3);
     }
 }
 
@@ -139,32 +163,6 @@ void mostrarProducto(int i, int j, vector<Producto> productos[]) {
     gotoxy(0, 0,0);
 }
 
-// Función para establecer color de fondo sin mover el cursor
-void setBackgroundAt(int x, int y, int width, int backgroundColor) {
-    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord;
-    coord.X = x;
-    coord.Y = y;
-    DWORD written;
-    
-    // Solo cambia el color de fondo, no mueve el cursor
-    FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
-}
-
-// Función para establecer color de fondo en un área rectangular sin mover cursor
-void setBackgroundArea(int x0, int y0, int x1, int y1, int backgroundColor) {
-    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD written;
-    
-    int width = x1 - x0 + 1;
-    
-    // Llenar cada fila con el color de fondo
-    for(int y = y0; y <= y1; y++) {
-        COORD coord = {x0, y};
-        FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
-    }
-}
-
 void mostrarEnColumna(int x, int y, string categoria) {
     cout << categoria << " ";
 }
@@ -183,37 +181,6 @@ int getCurrentCursorY() {
     return pos.Y;
 }
 
-// Función para obtener solo la coordenada X del cursor
-int getCurrentCursorX() {
-    COORD pos = getCurrentCursorPosition();
-    return pos.X;
-}
-
-// Función para limpiar/borrar el color de fondo (restaurar color normal)
-void clearBackgroundAt(int x, int y, int width) {
-    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord;
-    coord.X = x;
-    coord.Y = y;
-    DWORD written;
-    
-    // Restaurar color normal (sin fondo especial)
-    FillConsoleOutputAttribute(handle, NORMAL, width, coord, &written);
-}
-
-// Función para limpiar color de fondo en un área rectangular
-void clearBackgroundArea(int x0, int y0, int x1, int y1) {
-    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD written;
-    
-    int width = x1 - x0 + 1;
-    
-    // Limpiar cada fila restaurando color normal
-    for(int y = y0; y <= y1; y++) {
-        COORD coord = {x0, y};
-        FillConsoleOutputAttribute(handle, NORMAL, width, coord, &written);
-    }
-}
 
 int main() {
     double sumaTotal=0;
@@ -270,6 +237,10 @@ int main() {
                 break;
             case UP_ARROW:
                 mover(i, j, Productos, anterior, input);
+                setBackgroundAt(menu[i-1].pos_X+1, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
+                clearBackgroundArea(menu[i].pos_X, getCurrentCursorY()-y, menu[5].pos_X, getCurrentCursorY()-y);
+                y++;
+                yESC++;
                 break;
         }
     }
