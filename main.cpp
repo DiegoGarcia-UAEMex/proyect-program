@@ -230,7 +230,7 @@ int main() {
     }
     cout << endl;
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
-    setBackgroundAt(0, 4, menu[i].pos_X, LIGHT_GRAY_BLACK);
+    setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
     //Inicia la navegación por los Productos
     while(true){
         int input = _getch();
@@ -260,7 +260,7 @@ int main() {
                 break;
             case DOWN_ARROW:
                 mover(i, j, Productos, siguiente, input);
-                setBackgroundAt(0, 4, menu[i].pos_X, LIGHT_GRAY_BLACK);
+                setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(0, getCurrentCursorY()-y, menu[i-1].pos_X, getCurrentCursorY()-y);
                 y++;
                 yESC++;
