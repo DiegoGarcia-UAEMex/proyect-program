@@ -36,6 +36,7 @@ struct Producto
 #define GREEN_BLACK 160
 #define LIGHT_GREEN 176
 #define WHITE 240
+#define NORMAL 7  // Color normal (blanco sobre negro)
 
 // Productos
 vector<Producto> Productos[] = {
@@ -84,11 +85,11 @@ struct Menu {
 
 // Estructura para el menú
 struct Menu menu[] = {
-    {"Frutas", 0},
-    {"Verduras", 7},
-    {"Legumbres", 16},
-    {"Carnes", 26},
-    {"Lacteos", 33}
+    {"Frutas", 6},
+    {"Verduras", 15},
+    {"Legumbres", 25},
+    {"Carnes", 32},
+    {"Lacteos", 40}
 };
 
 // Funciones para navegar por los Productos
@@ -116,7 +117,6 @@ void anterior(int &i){
 void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
     if(input == UP_ARROW || input == DOWN_ARROW) {
         direction(i);
-        cout << nombreProductos[i] << endl;
         j = 0; // Reset product index when changing category
     } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
         direction(j);
@@ -137,10 +137,6 @@ void gotoxy(int x, int y, int width, int backgroundColor = LIGHT_GRAY_BLACK) {
 
 void mostrarProducto(int i, int j, vector<Producto> productos[]) {
     gotoxy(0, 0,0);
-}
-void mostrarEnColumna(int x, int y, int width, int backgroundColor, string categoria) {
-    cout << categoria << " ";
-    gotoxy(x, y, width, backgroundColor);
 }
 
 // Función para establecer color de fondo sin mover el cursor
@@ -169,6 +165,10 @@ void setBackgroundArea(int x0, int y0, int x1, int y1, int backgroundColor) {
     }
 }
 
+void mostrarEnColumna(int x, int y, string categoria) {
+    cout << categoria << " ";
+}
+
 // Función para obtener la posición actual del cursor
 COORD getCurrentCursorPosition() {
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -189,17 +189,48 @@ int getCurrentCursorX() {
     return pos.X;
 }
 
+// Función para limpiar/borrar el color de fondo (restaurar color normal)
+void clearBackgroundAt(int x, int y, int width) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    DWORD written;
+    
+    // Restaurar color normal (sin fondo especial)
+    FillConsoleOutputAttribute(handle, NORMAL, width, coord, &written);
+}
+
+// Función para limpiar color de fondo en un área rectangular
+void clearBackgroundArea(int x0, int y0, int x1, int y1) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    
+    int width = x1 - x0 + 1;
+    
+    // Limpiar cada fila restaurando color normal
+    for(int y = y0; y <= y1; y++) {
+        COORD coord = {x0, y};
+        FillConsoleOutputAttribute(handle, NORMAL, width, coord, &written);
+    }
+}
+
 int main() {
     double sumaTotal=0;
+    int yESC=2;
+    int y=3;
     system("cls");
     // mensaje de bienvenida
     cout << "Bienvenido al sistema de compra de Productos." << endl;
     int i = 0;
     int j = 0;
     cout << "Usa las flechas arriba y abajo para cambiar de categoria, las flechas izquierda y derecha para cambiar de producto en una misma categoria, Enter para seleccionar, Borrar para quitar la selección, ESC para salir:" << endl;
-    cout << nombreProductos[i] << endl;
+    for(int k = 0; k < 5; k++) {
+        mostrarEnColumna(menu[k].pos_X, 4, menu[k].categoria);
+    }
+    cout << endl;
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
-    setBackgroundArea(0, 4, 6, 4, LIGHT_GRAY_BLACK);
+    setBackgroundAt(0, 4, menu[i].pos_X, LIGHT_GRAY_BLACK);
     //Inicia la navegación por los Productos
     while(true){
         int input = _getch();
@@ -220,6 +251,7 @@ int main() {
                 break;
             case ESC:
             case 3:
+                clearBackgroundArea(0, getCurrentCursorY()-yESC, menu[i].pos_X, getCurrentCursorY()-yESC);
                 cout << "Gracias por usar el sistema de compra de Productos." << endl;
                 cout << "Total a pagar: $" << sumaTotal << endl;
                 return 0;
@@ -228,14 +260,16 @@ int main() {
                 break;
             case DOWN_ARROW:
                 mover(i, j, Productos, siguiente, input);
-                setBackgroundArea(0, getCurrentCursorY()-2, nombreProductos[i].size(), getCurrentCursorY()-2, LIGHT_GRAY_BLACK);
+                setBackgroundAt(0, 4, menu[i].pos_X, LIGHT_GRAY_BLACK);
+                clearBackgroundArea(0, getCurrentCursorY()-y, menu[i-1].pos_X, getCurrentCursorY()-y);
+                y++;
+                yESC++;
                 break;
             case LEFT_ARROW:
                 mover(i, j, Productos, anterior, input);
                 break;
             case UP_ARROW:
                 mover(i, j, Productos, anterior, input);
-                setBackgroundArea(0, getCurrentCursorY()-2, nombreProductos[i].size(), getCurrentCursorY()-2, LIGHT_GRAY_BLACK);
                 break;
         }
     }
