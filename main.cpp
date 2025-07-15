@@ -6,6 +6,8 @@
 #include <limits>
 #include <conio.h>
 #include <windows.h>
+#include <chrono>
+#include <thread>
 using namespace std;
 
 //Variables
@@ -91,6 +93,40 @@ struct Menu menu[] = {
     {"Carnes", 32},
     {"Lacteos", 40}
 };
+
+void delay(int milliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
+
+// Función para borrar texto y color en un área rectangular
+void clearLineAndPosition(int y) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(handle, &csbi);
+    
+    COORD coord = {0, y};
+    DWORD written;
+    
+    // Borrar toda la línea
+    FillConsoleOutputCharacter(handle, ' ', csbi.dwSize.X, coord, &written);
+    // Restaurar color normal
+    FillConsoleOutputAttribute(handle, NORMAL, csbi.dwSize.X, coord, &written);
+    // Posicionar el cursor al inicio de la línea borrada
+    SetConsoleCursorPosition(handle, coord);
+}
+
+// Función alternativa para borrar solo una línea completa
+void clearLine(int y) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(handle, &csbi);
+    
+    COORD coord = {0, y};
+    DWORD written;
+    
+    // Borrar toda la línea
+    FillConsoleOutputCharacter(handle, ' ', csbi.dwSize.X, coord, &written);
+}
 
 // Función para limpiar color de fondo en un área rectangular
 void clearBackgroundArea(int x0, int y0, int x1, int y1) {
@@ -210,41 +246,55 @@ int main() {
                 if(Productos[i][j].precio >= 0){
                     sumaTotal += Productos[i][j].precio;
                     cout << "Monto actual: $" << sumaTotal << endl;
+                    delay(1000); // Pausa de 1 segundo para que el usuario vea el mensaje
+                    clearLineAndPosition(getCurrentCursorY()-1);
                 }
                 break;
             case DELETEKEY:
                 if(sumaTotal > 0) {
                     sumaTotal -= Productos[i][j].precio;
                     cout << "Monto actual: $" << sumaTotal << endl;
+                    delay(1000); // Pausa de 1 segundo para que el usuario vea el mensaje
+                    clearLineAndPosition(getCurrentCursorY()-1);
                 } else {
                     cout << "No hay monto para eliminar." << endl;
+                    delay(1000); // Pausa de 1 segundo para que el usuario vea el mensaje
+                    clearLineAndPosition(getCurrentCursorY()-1);
                 }
                 break;
             case ESC:
             case 3:
-                clearBackgroundArea(0, 0, menu[i].pos_X, getCurrentCursorY());
+                clearBackgroundArea(0, 0, 100, getCurrentCursorY());
                 cout << "Gracias por usar el sistema de compra de Productos." << endl;
                 cout << "Total a pagar: $" << sumaTotal << endl;
                 return 0;
             case RIGHT_ARROW:
+                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, siguiente, input);
+                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
-                clearBackgroundArea(0, getCurrentCursorY()-y, menu[i-1].pos_X, getCurrentCursorY()-y);
+                clearBackgroundArea(0, 3, menu[i-1].pos_X, 3);
                 y++;
                 yESC++;
                 break;
             case DOWN_ARROW:
+                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, siguiente, input);
+                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 break;
             case LEFT_ARROW:
+                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, anterior, input);
+                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 setBackgroundAt(menu[i-1].pos_X+1, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
-                clearBackgroundArea(menu[i].pos_X, getCurrentCursorY()-y, menu[5].pos_X, getCurrentCursorY()-y);
+                clearBackgroundArea(menu[i].pos_X, 3, menu[5].pos_X, 3);
                 y++;
                 yESC++;
                 break;
             case UP_ARROW:
+                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, anterior, input);
+                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 break;
         }
     }
