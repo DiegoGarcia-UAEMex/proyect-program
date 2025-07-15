@@ -127,7 +127,26 @@ void clearLine(int y) {
     // Borrar toda la línea
     FillConsoleOutputCharacter(handle, ' ', csbi.dwSize.X, coord, &written);
 }
-
+// Función para borrar un área rectangular de texto y restaurar el color normal
+void clearTextAreaAndPosition(int y0, int y1) {
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD written;
+    
+    // Borrar cada fila del área especificada
+    for(int y = y0; y <= y1; y++) {
+        COORD coord = {0, y};
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(handle, &csbi);
+        // Llenar con espacios en blanco para borrar el texto
+        FillConsoleOutputCharacter(handle, ' ', csbi.dwSize.X, coord, &written);
+        // Restaurar el color normal
+        FillConsoleOutputAttribute(handle, NORMAL, csbi.dwSize.X, coord, &written);
+    }
+    
+    // Posicionar el cursor al inicio del área borrada
+    COORD newPos = {0, y0};
+    SetConsoleCursorPosition(handle, newPos);
+}
 // Función para limpiar color de fondo en un área rectangular
 void clearBackgroundArea(int x0, int y0, int x1, int y1) {
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -170,43 +189,6 @@ void anterior(int &i){
     }
 }
 
-
-// Función para mostrar los Productos disponibles
-void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
-    if(input == UP_ARROW || input == DOWN_ARROW) {
-        direction(j);
-    } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
-        direction(i);
-        if(i==0){
-            clearBackgroundArea(0, 3, 40, 3);
-        }
-        if(i==Productos[i].size()-1){
-            clearBackgroundArea(0, 3, 6, 3);
-        }
-        j = 0; // Reset product index when changing category
-    }
-    cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
-}
-// Función para mover el cursor a una posición específica en la consola
-void gotoxy(int x, int y, int width, int backgroundColor = LIGHT_GRAY_BLACK) {
-    HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord;
-    coord.X = x;
-    coord.Y = y;
-    DWORD written;
-    // Fill with background color
-    FillConsoleOutputAttribute(handle, backgroundColor, width, coord, &written);
-    SetConsoleCursorPosition(handle, coord);
-}
-
-void mostrarProducto(int i, int j, vector<Producto> productos[]) {
-    gotoxy(0, 0,0);
-}
-
-void mostrarEnColumna(int x, int y, string categoria) {
-    cout << categoria << " ";
-}
-
 // Función para obtener la posición actual del cursor
 COORD getCurrentCursorPosition() {
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -221,11 +203,41 @@ int getCurrentCursorY() {
     return pos.Y;
 }
 
+// Función para mostrar los Productos disponibles
+void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
+    if(input == UP_ARROW || input == DOWN_ARROW) {
+        direction(j);
+        if(j==0){
+            //clearBackgroundArea(0, 4, 40, 4);
+            clearBackgroundArea(0, 4, 40, getCurrentCursorY()-1);
+        }
+        if(j==Productos[i].size()-1){
+            clearBackgroundArea(0, 4, 40, getCurrentCursorY()-1);
+        }
+        setBackgroundAt(4, j+4, Productos[i][j].nombre.size(), YELLOW);
+    } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
+        direction(i);
+        if(i==0){
+            clearBackgroundArea(0, 3, 40, 3);
+        }
+        if(i==Productos[i].size()-1){
+            clearBackgroundArea(0, 3, 6, 3);
+        }
+        clearTextAreaAndPosition(4,getCurrentCursorY()-1);
+        j = 0; // Reset product index when changing category
+        for(int k = 0; k < 5; k++) {
+            cout <<"- "<< productos[i][k].id << " " << productos[i][k].nombre << " ($" << productos[i][k].precio << ")\n";
+        }
+        setBackgroundAt(4, 4, Productos[i][j].nombre.size(), YELLOW);
+    }
+}
+
+void mostrarEnColumna(int x, int y, string categoria) {
+    cout << categoria << " ";
+}
 
 int main() {
     double sumaTotal=0;
-    int yESC=3;
-    int y=3;
     system("cls");
     // mensaje de bienvenida
     cout << "Bienvenido al sistema de compra de Productos." << endl;
@@ -236,8 +248,11 @@ int main() {
         mostrarEnColumna(menu[k].pos_X, 4, menu[k].categoria);
     }
     cout << endl;
-    cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
+    for(int k = 0; k < 5; k++) {
+        cout << "- " << Productos[0][k].id << " " << Productos[0][k].nombre << " ($" << Productos[0][k].precio << ")" << endl;
+    }
     setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
+    setBackgroundAt(4, 4, Productos[0][0].nombre.size(), YELLOW);
     //Inicia la navegación por los Productos
     while(true){
         int input = _getch();
@@ -269,32 +284,23 @@ int main() {
                 cout << "Total a pagar: $" << sumaTotal << endl;
                 return 0;
             case RIGHT_ARROW:
-                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, siguiente, input);
-                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(0, 3, menu[i-1].pos_X, 3);
-                y++;
-                yESC++;
                 break;
             case DOWN_ARROW:
-                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, siguiente, input);
-                //cout<<"i: "<<i<<" j: "<<j<<endl;
+                clearBackgroundArea(4, j+3, 100, j+3);
                 break;
             case LEFT_ARROW:
-                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, anterior, input);
-                //cout<<"i: "<<i<<" j: "<<j<<endl;
                 setBackgroundAt(menu[i-1].pos_X+1, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(menu[i].pos_X, 3, menu[5].pos_X, 3);
-                y++;
-                yESC++;
+                setBackgroundAt(4, 4, Productos[i][j].nombre.size(), YELLOW);
                 break;
             case UP_ARROW:
-                clearLineAndPosition(getCurrentCursorY()-1);
                 mover(i, j, Productos, anterior, input);
-                //cout<<"i: "<<i<<" j: "<<j<<endl;
+                clearBackgroundArea(4, j+5, 100, j+5);
                 break;
         }
     }
