@@ -122,7 +122,6 @@ void siguiente(int &i) {
         i++;
     } else {
         i = 0;
-        clearBackgroundArea(0, 3, 40, 3);
     }
     
 }
@@ -132,7 +131,6 @@ void anterior(int &i){
         i--;
     } else {
         i=Productos[i].size() - 1;
-        clearBackgroundArea(0, 3, 6, 3);
     }
 }
 
@@ -140,10 +138,16 @@ void anterior(int &i){
 // Función para mostrar los Productos disponibles
 void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
     if(input == UP_ARROW || input == DOWN_ARROW) {
-        direction(i);
-        j = 0; // Reset product index when changing category
-    } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
         direction(j);
+    } else if (input == LEFT_ARROW || input == RIGHT_ARROW) {
+        direction(i);
+        if(i==0){
+            clearBackgroundArea(0, 3, 40, 3);
+        }
+        if(i==Productos[i].size()-1){
+            clearBackgroundArea(0, 3, 6, 3);
+        }
+        j = 0; // Reset product index when changing category
     }
     cout << "- " << Productos[i][j].id << " " << Productos[i][j].nombre << " ($" << Productos[i][j].precio << ")" << endl;
 }
@@ -184,7 +188,7 @@ int getCurrentCursorY() {
 
 int main() {
     double sumaTotal=0;
-    int yESC=2;
+    int yESC=3;
     int y=3;
     system("cls");
     // mensaje de bienvenida
@@ -218,29 +222,29 @@ int main() {
                 break;
             case ESC:
             case 3:
-                clearBackgroundArea(0, getCurrentCursorY()-yESC, menu[i].pos_X, getCurrentCursorY()-yESC);
+                clearBackgroundArea(0, 0, menu[i].pos_X, getCurrentCursorY());
                 cout << "Gracias por usar el sistema de compra de Productos." << endl;
                 cout << "Total a pagar: $" << sumaTotal << endl;
                 return 0;
             case RIGHT_ARROW:
-               mover(i, j, Productos, siguiente, input);
-                break;
-            case DOWN_ARROW:
                 mover(i, j, Productos, siguiente, input);
                 setBackgroundAt(0, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(0, getCurrentCursorY()-y, menu[i-1].pos_X, getCurrentCursorY()-y);
                 y++;
                 yESC++;
                 break;
-            case LEFT_ARROW:
-                mover(i, j, Productos, anterior, input);
+            case DOWN_ARROW:
+                mover(i, j, Productos, siguiente, input);
                 break;
-            case UP_ARROW:
+            case LEFT_ARROW:
                 mover(i, j, Productos, anterior, input);
                 setBackgroundAt(menu[i-1].pos_X+1, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(menu[i].pos_X, getCurrentCursorY()-y, menu[5].pos_X, getCurrentCursorY()-y);
                 y++;
                 yESC++;
+                break;
+            case UP_ARROW:
+                mover(i, j, Productos, anterior, input);
                 break;
         }
     }
