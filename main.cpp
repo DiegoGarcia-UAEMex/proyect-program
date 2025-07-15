@@ -207,11 +207,7 @@ int getCurrentCursorY() {
 void mover(int &i, int &j, vector<Producto> productos[], void (*direction)(int &i), int input) {
     if(input == UP_ARROW || input == DOWN_ARROW) {
         direction(j);
-        if(j==0){
-            //clearBackgroundArea(0, 4, 40, 4);
-            clearBackgroundArea(0, 4, 40, getCurrentCursorY()-1);
-        }
-        if(j==Productos[i].size()-1){
+        if(j==0|| j==Productos[i].size()-1) {
             clearBackgroundArea(0, 4, 40, getCurrentCursorY()-1);
         }
         setBackgroundAt(4, j+4, Productos[i][j].nombre.size(), YELLOW);
@@ -290,11 +286,13 @@ int main() {
                 break;
             case DOWN_ARROW:
                 mover(i, j, Productos, siguiente, input);
-                clearBackgroundArea(4, j+3, 100, j+3);
+                if(j>0){
+                    clearBackgroundArea(4, j+3, 100, j+3);
+                }
                 break;
             case LEFT_ARROW:
                 mover(i, j, Productos, anterior, input);
-                setBackgroundAt(menu[i-1].pos_X+1, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
+                setBackgroundAt(menu[i-1].pos_X, 3, menu[i].pos_X, LIGHT_GRAY_BLACK);
                 clearBackgroundArea(menu[i].pos_X, 3, menu[5].pos_X, 3);
                 setBackgroundAt(4, 4, Productos[i][j].nombre.size(), YELLOW);
                 break;
